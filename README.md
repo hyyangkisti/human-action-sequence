@@ -17,7 +17,7 @@ We propose a novel framework that combines **Word2Vec**, **Doc2Vec**, and **neur
 
 ## 📊 Dataset
 
-- Dataset: [OECD PIAAC Log Files](https://www.oecd.org/skills/piaac/data/piaaclogfiles/)
+- Dataset: [OECD PIAAC Log Files](https://www.oecd.org/en/data/datasets/piaac-1st-cycle-database.html)
 - Problem Sets Used:
   - `Party Invitation`: 1,388 participants, 35 actions
   - `Club Membership`: 1,345 participants, 25 actions
