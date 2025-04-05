@@ -50,7 +50,7 @@ Please contact hyyang@kisti.re.kr for license and usage information."
 
 ## Citation
 
-Yun, M., Jeon, M., & Yang, H. (2025). Discovering Action Insights from Large-Scale Assessment Log Data Using Machine Learning. *Under review at Scientific Reports*.
+Yun, M., Jeon, M., & Yang, H. (2025). Discovering Action Insights from Large-Scale Assessment Log Data Using Machine Learning. *Under review for publication*.
 
 
 
