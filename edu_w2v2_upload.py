@@ -106,6 +106,53 @@ def ann00(reduced_docvect, scoreL0, case):
     print(f"Test loss: {loss:.4f}, Test accuracy: {accuracy:.4f}")
     return binary_predictions, y_test
 
+def RF(reduced_docvert, scoreL0, case):
+    if case ==0: #scroe 3 = 1, the rest = 0       
+        indices = [index for index, value in enumerate(scoreL0) if value in [1,2]] #select data with only full/zero score
+        scoreL00 = [0 if index in indices else value for index, value in enumerate(scoreL0)]
+        scoreL00 = [1 if value ==3 else value for index, value in enumerate(scoreL00)]
+        
+        X= reduced_docvect
+        y= np.array(scoreL00)
+        nan_indices = [index for index, value in enumerate(y) if np.isnan(value)]
+    else: #only score 3 and 0
+        indices = [index for index, value in enumerate(scoreL0) if value in [0,3]]
+        scoreL00 = [scoreL0[ind] for ind in np.array(indices)]
+        scoreL00 = [1 if value ==3 else value for index, value in enumerate(scoreL00)]
+        
+        X= reduced_docvect[np.array(indices)]
+        y= np.array(scoreL00)
+        nan_indices = [index for index, value in enumerate(y) if np.isnan(value)]
+    
+    # Remove the element at the specified index
+    X = np.delete(X, nan_indices, axis=0)
+    y = np.delete(y, nan_indices)
+    
+    # Split the data into training and testing sets
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+    # Standardize the features
+    scaler = StandardScaler()
+    X_train = scaler.fit_transform(X_train)
+    X_test = scaler.transform(X_test)
+
+    # Convert labels to one-hot encoded vectors
+    y_train_encoded = to_categorical(y_train,num_classes=2)
+    y_test_encoded = to_categorical(y_test,num_classes=2)
+
+    # Initialize and train the Random Forest classifier
+    rf_model = RandomForestClassifier(n_estimators=100, random_state=42)
+    rf_model.fit(X_train, y_train_encoded)
+    
+    # Make predictions
+    y_pred = rf_model.predict(X_test)
+    
+    # Evaluate the model
+    accuracy = accuracy_score(y_test, y_pred)
+    
+    return y_pred, accuracy
+    
+
 def sent_doc(filtered_df, word_nicknames):
     unique_sq = filtered_df['SEQID'].unique()
     
@@ -197,6 +244,35 @@ def pre_doc2vec(result_df, max_seqid):
             tagged_data.append(TaggedDocument(words=acn_list0, tags=[str(isq)]))
             sent_list.append(acn_list0)        
     return tagged_data, sent_list, unique_seqid
+
+def pre_doc2vec_edt(result_df, max_seqid, lookup_list, case):   
+    unique_seqid = result_df['SEQID'].unique()
+    unique_crop = unique_seqid[unique_seqid < max_seqid]
+    #scoreL_idx = [[df_info0[df_info0['SEQID'] == ii].index.tolist()[0]+1,df_info0[df_info0['SEQID'] == ii]['U01a000S'].values[0]] for ii in unique_seqid0 if ii < max_seqid]
+    #unique_seqid = [value[0] for value in scoreL_idx if value[1] in [0.0,3.0]]
+
+    tagged_data = []
+    sent_list = []
+    for isq in unique_crop:
+         acn_list0= result_df[result_df['SEQID'] == isq]['event_type'].tolist()
+         #replacement_a = 'cluster1'; replacement_b = 'cluster2'
+         # New list with replaced elements
+         #new_list = [x if x in lookup_list else replacement_value for x in acn_list0]
+         #new_list = [replacement_a if x in lookup_list1 else replacement_b if x in lookup_list2 else x for x in acn_list0]
+         
+         if case ==0:
+             # Create a new list containing only the elements present in the lookup_list
+             new_list = [x for x in acn_list0 if x not in lookup_list]    
+         else:
+             new_list = [x for x in acn_list0 if x in lookup_list]    
+         
+         tagged_data.append(TaggedDocument(words=new_list, tags=[str(isq)]))
+         sent_list.append(new_list) 
+         
+    # Find all indices of sublists with the target length
+    indices_with_target_length = [index for index, sublist in enumerate(sent_list) if len(sublist) == 4]
+
+    return tagged_data, unique_crop, unique_seqid
 
 
 def doc2vec0(tagged_data, unique_seqid, max_seqid, df_info0, n_components, PT0):
@@ -392,8 +468,8 @@ def clst_sil(data0, cluster_labels):
     return silhouette_avg
 
 
-t_file = r"C:\Users\ymy09\Desktop\WORK\KISTI_UCLA\PythonCode\raw_data\BE_logdata.txt"
-info0 = r"C:\Users\ymy09\Desktop\WORK\KISTI_UCLA\PythonCode\raw_data\prgbelp1.csv"
+t_file = "BE_logdata.txt"
+info0 = 'raw_data/prgbelp1.csv'
 # Use the read_csv() function with delimiter='\t' to read the data from the text file into a pandas DataFrame
 df = pd.read_csv(t_file, delimiter='\t')
 df_info0 = pd.read_csv(info0)
@@ -411,7 +487,7 @@ reduced_docvect, scoreL0 = doc2vec0(tagged_data, unique_seqid, max_seqid, df_inf
 df_i_idx = var_ftr(df_info0, var0 = 'U01a000S', limit0 = 0)  
 model, seq_acn0 = word2vec1(result_df,df_i_idx)
 unique_words, word_embeddings_reduced = access_word2vec1(model,seq_acn0, n_components=2, PT0=0) #PT0=0 PDA, PTO=1 tSNE
-texts = dbscan0(word_embeddings_reduced, unique_words, nnk)
+texts = dbscan0(word_embeddings_reduced, unique_words, nnk=3)
 adj_text(texts)
 
 #doc2vect + t_SNE + Siluette score
