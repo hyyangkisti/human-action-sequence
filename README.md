@@ -19,7 +19,7 @@ We propose a novel framework that combines **Word2Vec**, **Doc2Vec**, and **neur
 
 - Dataset: [OECD PIAAC Log Files](https://www.oecd.org/en/data/datasets/piaac-1st-cycle-database.html)
 - Problem Sets Used:
-  - `Party Invitation`: 1,388 participants, 35 actions
+  - `Party Invitation`: 1,394 participants, 35 actions
   - `Club Membership`: 1,345 participants, 25 actions
 - We focused on complete and valid interaction sequences, stratified by performance score groups (e.g., 0 vs. 3)
 
